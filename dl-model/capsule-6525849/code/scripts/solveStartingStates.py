@@ -10,12 +10,16 @@ from subprocess import Popen, PIPE
 from multiprocessing import Process, Queue
 
 sys.path.append('./')
+sys.path.append('../')
 
 from environments import env_utils
 
 import socket
 
 import gc
+
+#
+import json
 
 def deleteIfExists(filename):
     if os.path.exists(filename):
@@ -124,32 +128,36 @@ print("Methods are: %s" % (",".join(methods)))
 
 ### Load starting states
 filename = args.input
-outFileLoc_pre = "testData/%s/%s_nnetPar%s_depthP%s_bfs%s_%s_solved" % (args.env.lower(),filename.split("/")[-1].split(".")[0],args.nnet_parallel,args.depth_penalty,args.bfs,"_".join(methods))
+# /// modify
+#outFileLoc_pre = "testData/%s/%s_nnetPar%s_depthP%s_bfs%s_%s_solved" % (args.env.lower(),filename.split("/")[-1].split(".")[0],args.nnet_parallel,args.depth_penalty,args.bfs,"_".join(methods))
+#if args.endIdx != -1:
+#    outFileLoc_pre = "%s_%i_%i" % (outFileLoc_pre,args.startIdx,args.endIdx)
+#if args.name != "":
+#    outFileLoc_pre = "%s_%s" % (outFileLoc_pre,args.name)
+#
+#outFileLoc = "%s.pkl" % (outFileLoc_pre)
 
-if args.endIdx != -1:
-    outFileLoc_pre = "%s_%i_%i" % (outFileLoc_pre,args.startIdx,args.endIdx)
-
-
-if args.name != "":
-    outFileLoc_pre = "%s_%s" % (outFileLoc_pre,args.name)
-
-outFileLoc = "%s.pkl" % (outFileLoc_pre)
+outFileLoc_pre = "demo"
+outFileLoc = "./output_demo.json"
 print >> sys.stderr, "Input File: %s, Output File: %s" % (filename,outFileLoc)
-
-inputData = pickle.load(open(filename,"rb"))
-// "scrambles" 没用上
+# /// modify
+with open(filename,'r') as inputfile:
+    inputData = json.load(inputfile)
 states = inputData['states']
+states = np.array(states)
 
-if args.endIdx == -1:
-    args.endIdx = len(states)
-
-states = states[args.startIdx:args.endIdx]
+#inputData = pickle.load(open(filename,"rb"))
+#if args.endIdx == -1:
+#    args.endIdx = len(states)
+#
+#states = states[args.startIdx:args.endIdx]
 
 ### Load nnet if needed
 if "nnet" in methods:
     from ml_utils import nnet_utils
     from ml_utils import search_utils
-
+    ### /// modify
+    os.environ["CUDA_VISIBLE_DEVICES"] = "0,1"
     if len(os.environ['CUDA_VISIBLE_DEVICES']) > 1:
         gpuNums = [int(x) for x in os.environ['CUDA_VISIBLE_DEVICES'].split(",")]
     else:
@@ -280,7 +288,10 @@ else:
         print >> sys.stderr, "State: %i, %s" % (idx,solveStr)
     
 ### Save data
-pickle.dump(data, open(outFileLoc, "wb"), protocol=1)
+#pickle.dump(data, open(outFileLoc, "wb"), protocol=1)
+# /// modify
+with open(outFileLoc,"w") as outfile:
+    json.dump(data["solutions"],outfile)
 
 ### Print stats
 for method in methods:
