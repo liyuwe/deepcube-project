@@ -11,3 +11,12 @@ conda install --yes python==2.7.5 tensorflow-gpu==1.8.0 && conda clean --yes --a
 
 3)平台依赖库：\
 pip install --upgrade dm-sonnet==1.10 matplotlib==2.2.3
+
+
+# 载入容器并进行端口映射，使得能够在虚拟机外部通过浏览器访问 :  docker run -idt -d 8000:8000  bash
+# 注意，win 进入容器的命令:winpty docker exec -it 容器名 bash 
+# 系统依赖django安装命令：pip install django
+# django为python2
+# 进入django项目目录，启动django: python manage.py runserver 0.0.0.0:8000
+# 浏览器中访问的是运行容器的虚拟机的ip:8000
+
